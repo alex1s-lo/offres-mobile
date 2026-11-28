@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Page publiée sur GitHub Pages par l'outil offres (PC) : elle ne contient aucune donnée. Elle lit la copie chiffrée
+     des offres publiée à côté d'elle, la déchiffre dans le téléphone et, si un jeton est enregistré sur ce téléphone,
+     renvoie les statuts que tu poses, chiffrés aussi (api.github.com). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f6f6f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Offres">
+<title>Offres de stage</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f5bea'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<style>
+:root {
+  --fond: #f6f6f7; --carte: #ffffff; --texte: #1b1b1f; --doux: #66666e; --pale: #9a9aa2;
+  --ligne: #e5e5e9; --survol: #f0f0f3; --accent: #2f5bea; --accent-doux: #e9eefd; --sur-accent: #ffffff;
+  --vert: #16794a; --vert-doux: #e3f4ea; --orange: #a65b00; --orange-doux: #fdf0de;
+  --rouge: #b42840; --rouge-doux: #fbe8eb; --violet: #6d3fc4; --violet-doux: #efe8fb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #111113; --carte: #1a1a1d; --texte: #ececef; --doux: #a3a3ab; --pale: #74747c;
+    --ligne: #2a2a2f; --survol: #222226; --accent: #7d9bff; --accent-doux: #1d2546; --sur-accent: #0d1124;
+    --vert: #5ccf93; --vert-doux: #13291d; --orange: #f1a54c; --orange-doux: #2d2112;
+    --rouge: #ff7a8e; --rouge-doux: #33171c; --violet: #b79bff; --violet-doux: #2a2145;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, input { font: inherit; color: inherit; }
+.page { max-width: 640px; margin: 0 auto; padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
+[hidden] { display: none !important; }
+
+header { display: flex; align-items: center; gap: 10px; padding: calc(14px + env(safe-area-inset-top)) 0 6px; }
+header h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+.etat { font-size: 13px; color: var(--doux); padding-bottom: 10px; }
+.etat b { font-weight: 600; color: var(--texte); }
+.etat .attente { color: var(--orange); }
+.etat .erreur { color: var(--rouge); }
+.lien-etat { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; font-size: inherit; cursor: pointer; }
+.icone { margin-left: auto; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--ligne); background: var(--carte); display: grid; place-items: center; cursor: pointer; }
+.icone svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.icone + .icone { margin-left: 0; }
+.icone[aria-busy="true"] svg { animation: tourne 1s linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+
+.collant { position: sticky; top: 0; z-index: 5; background: var(--fond); padding: 6px 0 8px; }
+nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--survol); border-radius: 12px; padding: 4px; }
+nav button { border: 0; background: none; border-radius: 9px; padding: 8px 4px; font-size: 14px; color: var(--doux); cursor: pointer; line-height: 1.2; }
+nav button.actif { background: var(--carte); color: var(--texte); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+nav .n { display: block; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--pale); font-weight: 400; }
+nav .n.relance { color: var(--orange); }
+.recherche { margin-top: 8px; width: 100%; background: var(--carte); border: 1px solid var(--ligne); border-radius: 10px; padding: 10px 12px; font-size: 16px; }
+.recherche:focus { outline: 2px solid var(--accent-doux); border-color: var(--accent); }
+.sous { display: flex; gap: 6px; overflow-x: auto; padding-top: 8px; scrollbar-width: none; }
+.sous button { flex: none; border: 1px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--doux); cursor: pointer; }
+.sous button.actif { background: var(--accent-doux); border-color: var(--accent); color: var(--accent); }
+
+.jour { font-size: 13px; color: var(--doux); font-weight: 600; margin: 18px 2px 8px; }
+.jour:first-letter { text-transform: uppercase; }
+.carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+.carte.sortante { opacity: .45; transition: opacity .2s; }
+.haut { display: flex; gap: 12px; align-items: flex-start; }
+.score { flex: none; min-width: 38px; text-align: center; font-weight: 650; font-size: 14px; border-radius: 8px; padding: 3px 0; background: var(--survol); color: var(--doux); font-variant-numeric: tabular-nums; }
+.score.eleve { background: var(--vert-doux); color: var(--vert); }
+.score.moyen { background: var(--accent-doux); color: var(--accent); }
+.titre { font-weight: 600; color: var(--texte); text-decoration: none; display: block; overflow-wrap: anywhere; }
+.meta { color: var(--doux); font-size: 14px; margin-top: 2px; overflow-wrap: anywhere; }
+.meta .sep { color: var(--pale); margin: 0 4px; }
+.etiq { display: inline-block; font-size: 12px; border-radius: 6px; padding: 1px 7px; margin: 6px 6px 0 0; }
+.etiq.relance { background: var(--orange-doux); color: var(--orange); }
+.etiq.entretien { background: var(--violet-doux); color: var(--violet); }
+.etiq.refus { background: var(--rouge-doux); color: var(--rouge); }
+.etiq.postule { background: var(--vert-doux); color: var(--vert); }
+.etiq.interesse { background: var(--accent-doux); color: var(--accent); }
+.etiq.local { background: var(--survol); color: var(--doux); }
+.aussi { font-size: 13px; color: var(--doux); margin-top: 6px; }
+.aussi a { color: var(--accent); }
+details.notes { margin-top: 8px; font-size: 14px; }
+details.notes summary { color: var(--doux); cursor: pointer; }
+details.notes div { white-space: pre-wrap; background: var(--survol); border-radius: 8px; padding: 8px 10px; margin-top: 6px; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.act { flex: 1 1 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--ligne); background: var(--carte); cursor: pointer; font-size: 15px; padding: 0 10px; white-space: nowrap; }
+.act:active { background: var(--survol); }
+.act.interesse { color: var(--accent); }
+.act.postule { color: var(--vert); }
+.act.entretien { color: var(--violet); }
+.act.refus, .act.ignore { color: var(--rouge); }
+.act.retirer { color: var(--doux); flex: 0 1 auto; }
+
+.vide { text-align: center; color: var(--doux); padding: 56px 12px; }
+.vide strong { display: block; color: var(--texte); font-size: 17px; margin-bottom: 4px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--texte); color: var(--fond); border-radius: 12px; padding: 10px 10px 10px 16px; display: flex; gap: 12px; align-items: center; font-size: 15px; box-shadow: 0 6px 24px rgba(0,0,0,.2); width: max-content; max-width: calc(100% - 32px); z-index: 10; }
+.toast span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.toast button { border: 0; background: none; color: var(--accent); font-weight: 650; padding: 6px 8px; cursor: pointer; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .toast button { color: #2f5bea; } }
+
+.config { padding-top: 8px; }
+.config h2 { font-size: 18px; margin: 12px 0 4px; }
+.config p { color: var(--doux); font-size: 15px; margin: 6px 0 14px; }
+.champ { margin-bottom: 14px; }
+.champ label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.champ input { width: 100%; background: var(--carte); border: 1px solid var(--ligne); border-radius: 10px; padding: 11px 12px; font-size: 16px; }
+.champ .aide { color: var(--doux); font-size: 13px; margin-top: 4px; }
+.principal { width: 100%; min-height: 48px; border: 0; border-radius: 12px; background: var(--accent); color: var(--sur-accent); font-weight: 650; font-size: 16px; cursor: pointer; }
+.principal[aria-busy="true"] { opacity: .7; }
+.secondaire { width: 100%; min-height: 44px; border: 1px solid var(--ligne); border-radius: 12px; background: var(--carte); cursor: pointer; margin-top: 10px; }
+.message { border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 15px; }
+.message.erreur { background: var(--rouge-doux); color: var(--rouge); }
+.message.info { background: var(--accent-doux); color: var(--accent); }
+.encart { background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 14px; margin: 14px 0; font-size: 14px; color: var(--doux); }
+.encart b { color: var(--texte); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Offres de stage</h1>
+    <button class="icone" id="rafraichir" title="Recharger la copie et envoyer tes changements" aria-label="Recharger" hidden>
+      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 4v5h-5"/></svg></button>
+    <button class="icone" id="menu" title="Paramètres de cet appareil" aria-label="Paramètres" hidden>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <div class="etat" id="etat"></div>
+  <main id="vue"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+'use strict';
+// ---- Chiffrement : identique à offres/mobile.py (PBKDF2-SHA256, flux HMAC-SHA256 en mode compteur, HMAC-SHA256) ----
+const FORMAT = 'offres-mobile/1';
+const enc = s => new TextEncoder().encode(s);
+const concat = (...l) => { const r = new Uint8Array(l.reduce((n, x) => n + x.length, 0)); let i = 0; for (const x of l) { r.set(x, i); i += x.length; } return r; };
+const u32 = n => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n); return b; };
+function versB64(o) { let s = ''; for (let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000)); return btoa(s); }
+function depuisB64(t) { const s = atob(String(t).replace(/\s/g, '')); const o = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i); return o; }
+async function gzip(octets, compresser) {
+  const flux = new Blob([octets]).stream().pipeThrough(compresser ? new CompressionStream('gzip') : new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(flux).arrayBuffer());
+}
+// Saisie tolérante (comme le PC) : majuscules, sans espaces ni tirets.
+const normaliserMdp = m => String(m || '').replace(/[\s-]/g, '').toUpperCase().normalize('NFC');
+async function deriver(motDePasse, sel, iterations) {
+  const base = await crypto.subtle.importKey('raw', enc(normaliserMdp(motDePasse)), 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: sel, iterations }, base, 512));
+}
+const cleHmac = o => crypto.subtle.importKey('raw', o, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+async function flux(cle, nonce, n) {
+  const k = await cleHmac(cle), nb = Math.ceil(n / 32), sortie = new Uint8Array(nb * 32);
+  for (let d = 0; d < nb; d += 1024) {                     // par paquets : rapide sans saturer la mémoire du téléphone
+    const blocs = await Promise.all(Array.from({ length: Math.min(1024, nb - d) }, (_, j) => crypto.subtle.sign('HMAC', k, concat(nonce, u32(d + j)))));
+    blocs.forEach((b, j) => sortie.set(new Uint8Array(b), (d + j) * 32));
+  }
+  return sortie.subarray(0, n);
+}
+const xor = (a, b) => a.map((x, i) => x ^ b[i]);
+async function tag(cleAuth, sel, iterations, nonce, chiffre) {
+  return new Uint8Array(await crypto.subtle.sign('HMAC', await cleHmac(cleAuth), concat(enc(FORMAT), new Uint8Array([0]), sel, u32(iterations), nonce, chiffre)));
+}
+function lireEnveloppe(texte) {
+  let e; try { e = JSON.parse(texte); } catch (_) { e = null; }
+  if (!e || e.format !== FORMAT) throw new Error('Fichier chiffré illisible (format inconnu).');
+  return { sel: depuisB64(e.sel), iterations: +e.iterations, nonce: depuisB64(e.nonce), donnees: depuisB64(e.donnees), tag: depuisB64(e.tag) };
+}
+class MdpIncorrect extends Error {}
+async function dechiffrer(texte, cle) {
+  const e = lireEnveloppe(texte);
+  const attendu = await tag(cle.subarray(32), e.sel, e.iterations, e.nonce, e.donnees);
+  let diff = attendu.length ^ e.tag.length;
+  for (let i = 0; i < attendu.length; i++) diff |= attendu[i] ^ (e.tag[i] | 0);
+  if (diff) throw new MdpIncorrect('Mot de passe incorrect (ou fichier modifié).');
+  const clair = await gzip(xor(e.donnees, await flux(cle.subarray(0, 32), e.nonce, e.donnees.length)), false);
+  return JSON.parse(new TextDecoder().decode(clair));
+}
+async function chiffrer(obj, cle, sel, iterations) {
+  const clair = await gzip(enc(JSON.stringify(obj)), true);
+  const nonce = crypto.getRandomValues(new Uint8Array(16));
+  const chiffre = xor(clair, await flux(cle.subarray(0, 32), nonce, clair.length));
+  return JSON.stringify({ format: FORMAT, sel: versB64(sel), iterations, nonce: versB64(nonce), donnees: versB64(chiffre),
+                          tag: versB64(await tag(cle.subarray(32), sel, iterations, nonce, chiffre)) });
+}
+
+// ---- GitHub : lecture et écriture de fichiers du dépôt privé, avec le jeton enregistré sur ce téléphone ----
+class Conflit extends Error {}
+async function gh(methode, chemin, corps) {
+  let r;
+  try {
+    r = await fetch(`https://api.github.com/repos/${R.depot}/${chemin}`, { method: methode, cache: 'no-store',
+      headers: { Authorization: 'Bearer ' + R.jeton, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28',
+                 ...(corps ? { 'Content-Type': 'application/json' } : {}) }, body: corps ? JSON.stringify(corps) : undefined });
+  } catch (_) { throw new Error('Pas de connexion internet : tes changements restent sur ce téléphone et partiront plus tard.'); }
+  if (r.status === 404) return null;
+  if (r.status === 409 || r.status === 422) throw new Conflit('Fichier modifié entre-temps.');
+  if (r.status === 401) throw new Error('GitHub refuse le jeton : expiré, révoqué ou mal copié. Paramètres > Changer de jeton.');
+  if (r.status === 403) throw new Error("Le jeton n'a pas le droit d'écrire sur ce dépôt (permission « Contents : Read and write »).");
+  if (!r.ok) throw new Error(`GitHub a répondu ${r.status}.`);
+  return r.json();
+}
+async function lireFichier(nom) {
+  const r = await gh('GET', 'contents/' + nom);
+  if (!r) return null;
+  let contenu = r.content || '';
+  if (!contenu && r.size) contenu = ((await gh('GET', 'git/blobs/' + r.sha)) || {}).content || '';
+  return { texte: new TextDecoder().decode(depuisB64(contenu)), sha: r.sha };
+}
+const ecrireFichier = (nom, texte, sha, message) => gh('PUT', 'contents/' + nom, { message, content: versB64(enc(texte)), ...(sha ? { sha } : {}) });
+// Lecture : avec un jeton, par l'API (version la plus fraîche, et le sha nécessaire pour écrire) ; sans jeton, le
+// fichier publié à côté de la page (GitHub Pages peut avoir quelques minutes de retard sur le dépôt).
+async function lireCopie(nom) {
+  if (R.jeton) return lireFichier(nom);
+  let r;
+  try { r = await fetch(nom + '?t=' + Date.now(), { cache: 'no-store' }); }
+  catch (_) { throw new Error('Pas de connexion internet.'); }
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`GitHub Pages a répondu ${r.status}.`);
+  return { texte: await r.text(), sha: null };
+}
+// Dépôt déduit de l'adresse de la page : https://pseudo.github.io/nom/ -> pseudo/nom
+function depotDeLAdresse() {
+  try {
+    const m = /^([a-z0-9-]+)\.github\.io$/i.exec(location.hostname);
+    if (!m) return '';
+    const nom = location.pathname.split('/').filter(Boolean)[0];
+    return `${m[1]}/${nom && !/\.html$/i.test(nom) ? nom : m[1] + '.github.io'}`;
+  } catch (_) { return ''; }
+}
+
+// ---- État de la page ----
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const lien = u => /^https?:\/\//i.test(u || '') ? esc(u) : '#';
+const memoire = {
+  lire(k, d) { try { const v = localStorage.getItem('offres.' + k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+  ecrire(k, v) { try { if (v == null) localStorage.removeItem('offres.' + k); else localStorage.setItem('offres.' + k, JSON.stringify(v)); } catch (_) {} },
+};
+const R = {
+  depot: memoire.lire('depot', '') || depotDeLAdresse(), jeton: memoire.lire('jeton', ''),   // jeton facultatif : pour trier
+  cle: null, sel: null, iterations: 0,                 // clé dérivée du mot de passe (jamais le mot de passe lui-même)
+  copie: null,                                         // instantané déchiffré : { genere_le, relance_jours, offres }
+  distants: [],                                        // changements déjà envoyés, pas encore appliqués par le PC
+  attente: memoire.lire('attente', []),                // changements faits ici, pas encore envoyés
+  vue: memoire.lire('vue', 'avoir'), sousVue: 'toutes', q: '', erreur: '', occupe: false, envoi: null,
+};
+(function chargerCle() {
+  const c = memoire.lire('cle', null);
+  if (c && c.cle && c.sel) { R.cle = depuisB64(c.cle); R.sel = depuisB64(c.sel); R.iterations = c.iterations; }
+})();
+const CANDIDATURES = ['postule', 'entretien', 'refus'];
+const LIBELLES = { interesse: 'Intéressé', postule: 'Postulé', entretien: 'Entretien', refus: 'Refus', ignore: 'Ignoré' };
+function maintenant() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 19); }
+function joursDepuis(iso) { if (!iso) return 0; return Math.floor((Date.now() - new Date(iso.slice(0, 10) + 'T00:00:00').getTime()) / 864e5); }
+function ilYa(iso) {
+  if (!iso) return '';
+  const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (min < 2) return "à l'instant";
+  if (min < 60) return `il y a ${min} min`;
+  if (min < 48 * 60) return `il y a ${Math.round(min / 60)} h`;
+  return `il y a ${Math.round(min / 1440)} jours`;
+}
+function nomJour(j) {
+  const n = joursDepuis(j);
+  if (n <= 0) return "aujourd'hui";
+  if (n === 1) return 'hier';
+  try { return new Date(j + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); } catch (_) { return j; }
+}
+function nouvelId() { const o = crypto.getRandomValues(new Uint8Array(12)); return Array.from(o, x => x.toString(16).padStart(2, '0')).join(''); }
+
+// Statut affiché = celui du PC, remplacé par les changements faits ici s'ils sont plus récents (même règle que le PC).
+function offres() {
+  if (!R.copie) return [];
+  const chg = [...R.distants, ...R.attente].sort((a, b) => (a.quand < b.quand ? -1 : a.quand > b.quand ? 1 : 0));
+  const parCle = new Map(R.copie.offres.map(o => [o.cle, { ...o, local: false }]));
+  for (const c of chg) {
+    const o = parCle.get(c.cle);
+    const pc = (o && o.statut_le || '').slice(0, 19);
+    if (!o || pc > c.quand || (pc === c.quand && o.statut === c.statut)) continue;
+    const avant = o.statut;
+    o.postule_le = c.statut === 'postule' ? (CANDIDATURES.includes(avant) && avant !== 'postule' && o.postule_le ? o.postule_le : c.quand)
+      : CANDIDATURES.includes(c.statut) ? (o.postule_le || c.quand) : null;
+    Object.assign(o, { statut: c.statut, statut_le: c.quand, local: true });
+  }
+  return [...parCle.values()];
+}
+const aRelancer = o => o.statut === 'postule' && joursDepuis(o.postule_le || o.statut_le) >= (R.copie.relance_jours || 7);
+const VUES = {
+  avoir: ['À voir', o => !o.statut],
+  interesse: ['Intéressé', o => o.statut === 'interesse'],
+  postule: ['Candidatures', o => CANDIDATURES.includes(o.statut)],
+};
+const SOUS_VUES = { toutes: ['Toutes', () => true], relance: ['À relancer', aRelancer], attente: ['Sans réponse', o => o.statut === 'postule'],
+                    entretien: ['Entretiens', o => o.statut === 'entretien'], refus: ['Refus', o => o.statut === 'refus'], ignore: ['Ignorées ici', o => o.statut === 'ignore'] };
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+// ---- Rendu ----
+const lectureSeule = () => !R.jeton;
+function rendre() {
+  const configure = !!(R.depot && R.cle);
+  $('#rafraichir').hidden = $('#menu').hidden = !configure || !R.copie;
+  if (!configure || R.vue === 'config') return rendreConfig();
+  if (!R.copie) {
+    $('#etat').innerHTML = '';
+    $('#vue').innerHTML = R.erreur ? `<div class="message erreur">${esc(R.erreur)}</div><button class="secondaire" data-a="recharger">Réessayer</button><button class="secondaire" data-a="config">Paramètres</button>`
+      : '<div class="vide"><strong>Chargement…</strong>Lecture de la copie chiffrée.</div>';
+    return;
+  }
+  rendreEtat();
+  const toutes = offres(), mots = norm(R.q).split(/\s+/).filter(Boolean);
+  const cherche = o => mots.every(m => norm([o.titre, o.entreprise, o.lieu].join(' ')).includes(m));
+  const nb = k => toutes.filter(VUES[k][1]).length, rel = toutes.filter(aRelancer).length;
+  const ignorees = toutes.filter(o => o.statut === 'ignore');
+  let html = '<div class="collant"><nav id="onglets">' + Object.entries(VUES).map(([k, [l]]) =>
+    `<button data-vue="${k}" class="${R.vue === k ? 'actif' : ''}">${l}<span class="n${k === 'postule' && rel ? ' relance' : ''}">${nb(k)}${k === 'postule' && rel ? ` · ${rel} à relancer` : ''}</span></button>`).join('') + '</nav>'
+    + `<input class="recherche" id="q" type="search" placeholder="Chercher un titre, une entreprise, un lieu" value="${esc(R.q)}" autocomplete="off">`;
+  let liste;
+  if (R.vue === 'postule') {
+    const sous = Object.entries(SOUS_VUES).filter(([k]) => k !== 'ignore');
+    html += '<div class="sous">' + sous.map(([k, [l, f]]) => `<button data-sous="${k}" class="${R.sousVue === k ? 'actif' : ''}">${l} ${toutes.filter(o => CANDIDATURES.includes(o.statut) && f(o)).length}</button>`).join('') + '</div>';
+    const f = (SOUS_VUES[R.sousVue] || SOUS_VUES.toutes)[1];
+    const rang = o => aRelancer(o) ? 0 : o.statut === 'entretien' ? 1 : o.statut === 'postule' ? 2 : 3;
+    liste = toutes.filter(o => VUES.postule[1](o) && f(o) && cherche(o))
+      .sort((a, b) => rang(a) - rang(b) || String(a.postule_le || a.statut_le || '').localeCompare(String(b.postule_le || b.statut_le || '')));
+  } else if (R.vue === 'ignore') {
+    liste = ignorees.filter(cherche);
+  } else {
+    liste = toutes.filter(o => (VUES[R.vue] || VUES.avoir)[1](o) && cherche(o))
+      .sort((a, b) => b.jour.localeCompare(a.jour) || b.score - a.score);
+  }
+  html += '</div>';
+  if (R.vue === 'avoir' && ignorees.length) html += `<div class="sous"><button data-vue="ignore">Ignorées ici ${ignorees.length}</button></div>`;
+  if (R.vue === 'ignore') html += '<div class="sous"><button data-vue="avoir">← À voir</button></div>';
+  if (!liste.length) {
+    const vides = { avoir: ['Rien à voir', 'Toutes les offres récentes ont un statut. Les nouvelles arrivent après la prochaine lecture des mails sur le PC.'],
+                    interesse: ['Aucune offre « Intéressé »', 'Les offres marquées « Intéressé » apparaissent ici.'],
+                    postule: ['Aucune candidature', 'Les offres marquées « Postulé » apparaissent ici, avec la relance.'],
+                    ignore: ['Aucune offre ignorée ici', ''] };
+    const [t, d] = mots.length ? ['Aucun résultat', 'Essaie un autre mot.'] : (vides[R.vue] || vides.avoir);
+    $('#vue').innerHTML = html + `<div class="vide"><strong>${esc(t)}</strong>${esc(d)}</div>`;
+    return;
+  }
+  let jour = null;
+  for (const o of liste) {
+    if (R.vue !== 'postule' && o.jour !== jour) { jour = o.jour; html += `<div class="jour">${esc(nomJour(jour))}</div>`; }
+    html += carte(o);
+  }
+  $('#vue').innerHTML = html;
+}
+function rendreEtat() {
+  const n = R.attente.length;
+  let h = `Données du PC mises à jour <b>${esc(ilYa(R.copie.genere_le))}</b>`;
+  if (lectureSeule()) h += ' · lecture seule <button class="lien-etat" data-a="config">trier depuis ce téléphone</button>';
+  else if (n) h += ` · <span class="attente">${n} changement${n > 1 ? 's' : ''} à envoyer</span>`;
+  else if (R.distants.length) h += ` · ${R.distants.length} envoyé${R.distants.length > 1 ? 's' : ''}, appliqué${R.distants.length > 1 ? 's' : ''} à la prochaine synchronisation du PC`;
+  if (R.erreur) h += `<div class="erreur">${esc(R.erreur)}</div>`;
+  $('#etat').innerHTML = h;
+}
+function boutons(o) {
+  if (lectureSeule()) return '';
+  const b = (s, l, cls) => `<button class="act ${cls || s || 'retirer'}" data-s="${s || ''}">${l}</button>`;
+  switch (o.statut) {
+    case 'interesse': return b('postule', 'Postulé') + b('ignore', 'Ignorer') + b('', 'Retirer');
+    case 'postule': return b('entretien', 'Entretien') + b('refus', 'Refus') + b('interesse', 'Annuler', 'retirer');
+    case 'entretien': return b('refus', 'Refus') + b('postule', 'Annuler', 'retirer');
+    case 'refus': return b('entretien', 'Entretien') + b('postule', 'Annuler', 'retirer');
+    case 'ignore': return b('', 'Remettre dans À voir');
+    default: return b('interesse', 'Intéressé') + b('postule', 'Postulé') + b('ignore', 'Ignorer');
+  }
+}
+const nomSource = s => s === 'carrieres' ? 'site carrière' : s;
+function carte(o) {
+  const sc = o.score >= 8 ? 'eleve' : o.score >= 5 ? 'moyen' : '';
+  const meta = [o.entreprise, o.lieu].filter(Boolean).map(esc).join('<span class="sep">·</span>');
+  let etiq = '';
+  if (CANDIDATURES.includes(o.statut) || o.statut === 'interesse') {
+    const depuis = o.statut === 'interesse' ? o.statut_le : (o.postule_le || o.statut_le);
+    const j = joursDepuis(depuis);
+    etiq += `<span class="etiq ${o.statut}">${LIBELLES[o.statut]}${depuis ? ` · ${j === 0 ? "aujourd'hui" : j === 1 ? 'hier' : `il y a ${j} j`}` : ''}</span>`;
+  }
+  if (aRelancer(o)) etiq += '<span class="etiq relance">À relancer</span>';
+  if (o.local) etiq += '<span class="etiq local">modifié sur le téléphone</span>';
+  const aussi = (o.aussi_sur || []).filter(a => a.url).map(a => `<a href="${lien(a.url)}" target="_blank" rel="noopener noreferrer">${esc(nomSource(a.source))}</a>`).join(', ');
+  const actions = boutons(o);
+  return `<article class="carte" data-cle="${esc(o.cle)}"><div class="haut"><span class="score ${sc}">${esc(Math.round(o.score * 10) / 10)}</span><div style="min-width:0">`
+    + `<a class="titre" href="${lien(o.url)}" target="_blank" rel="noopener noreferrer">${esc(o.titre)}</a>`
+    + `<div class="meta">${meta}${o.source ? `<span class="sep">·</span>${esc(nomSource(o.source))}` : ''}</div>${etiq ? `<div>${etiq}</div>` : ''}`
+    + (aussi ? `<div class="aussi">Aussi sur : ${aussi}</div>` : '')
+    + (o.notes ? `<details class="notes"><summary>Notes</summary><div>${esc(o.notes)}</div></details>` : '')
+    + `</div></div>${actions ? `<div class="actions">${actions}</div>` : ''}</article>`;
+}
+function rendreConfig() {
+  $('#etat').innerHTML = '';
+  const deja = !!(R.depot && R.cle), auto = depotDeLAdresse();
+  $('#vue').innerHTML = `<form class="config" id="form-config" autocomplete="off">
+    <h2>${deja ? 'Paramètres de cet appareil' : 'Relier ce téléphone'}</h2>
+    <p>Le mot de passe est affiché sur ton PC : <b>Réglages → Accès mobile → Afficher le mot de passe</b>. Il reste sur ce téléphone sous forme de clé ; le mot de passe lui-même n'est pas enregistré.</p>
+    ${R.erreur ? `<div class="message erreur">${esc(R.erreur)}</div>` : ''}
+    <div class="champ"><label for="c-mdp">Mot de passe</label><input id="c-mdp" type="password" placeholder="${R.cle ? 'Déjà saisi : laisse vide pour le garder' : 'XXXX-XXXX-XXXX-XXXX-XXXX'}" autocapitalize="characters" spellcheck="false">
+      <div class="aide">Majuscules, espaces et tirets : peu importe.</div></div>
+    <div class="champ"><label for="c-jeton">Jeton GitHub <span style="font-weight:400;color:var(--doux)">(facultatif)</span></label><input id="c-jeton" type="password" placeholder="${R.jeton ? 'Déjà enregistré : laisse vide pour le garder' : 'github_pat_…'}" autocapitalize="none" spellcheck="false">
+      <div class="aide">Seulement pour <b>trier depuis le téléphone</b> (Intéressé, Postulé…). Sans jeton, tu consultes en lecture seule. À créer sur github.com → Settings → Developer settings → Fine-grained tokens : accès à ce seul dépôt, permission <i>Contents : Read and write</i>.</div>
+      ${R.jeton ? '<label class="aide" style="display:flex;gap:6px;align-items:center;margin-top:6px"><input type="checkbox" id="c-sans-jeton" style="width:auto"> Retirer le jeton (lecture seule)</label>' : ''}</div>
+    <div class="champ"${auto && R.depot === auto ? ' hidden' : ''}><label for="c-depot">Dépôt GitHub</label><input id="c-depot" value="${esc(R.depot)}" placeholder="ton-pseudo/offres-mobile" autocapitalize="none" spellcheck="false">
+      <div class="aide">Le dépôt public de cette page, sous la forme pseudo/nom.</div></div>
+    <button class="principal" type="submit" id="c-ok">${deja ? 'Enregistrer' : 'Ouvrir mes offres'}</button>
+    ${deja ? '<button class="secondaire" type="button" data-a="retour">Retour aux offres</button>' : ''}
+  </form>
+  ${deja ? `<div class="encart"><b>Oublier cet appareil</b><br>Efface la clé, le jeton et la copie de ce téléphone. ${R.attente.length ? `<br><b style="color:var(--rouge)">${R.attente.length} changement(s) pas encore envoyé(s) seront perdus.</b>` : ''}<button class="secondaire" type="button" data-a="oublier">Oublier cet appareil</button></div>` : ''}
+  <div class="encart"><b>Astuce :</b> ajoute cette page à l'écran d'accueil (Safari : Partager → Sur l'écran d'accueil ; Chrome : ⋮ → Ajouter à l'écran d'accueil) pour l'ouvrir comme une application.</div>`;
+}
+let minuterieToast = null;
+function toast(texte, annuler) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(texte)}</span>` + (annuler ? '<button data-a="annuler">Annuler</button>' : '');
+  t.hidden = false;
+  clearTimeout(minuterieToast);
+  minuterieToast = setTimeout(() => { t.hidden = true; }, 4000);
+}
+
+// ---- Actions ----
+async function connecter(depot, motDePasse, jeton, sansJeton) {
+  depot = String(depot || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/, '').replace(/\/+$/, '');
+  if (!/^[\w.-]+\/[\w.-]+$/.test(depot)) throw new Error('Dépôt invalide : forme attendue « pseudo/nom ».');
+  const ancien = { depot: R.depot, jeton: R.jeton };
+  R.depot = depot;
+  R.jeton = sansJeton ? '' : String(jeton || '').trim() || R.jeton;
+  try {
+    const f = await lireCopie('instantane.json');
+    if (!f) throw new Error("Le PC n'a encore rien publié : sur le PC, Réglages → Accès mobile → Synchroniser maintenant (et GitHub Pages peut mettre quelques minutes la première fois).");
+    const e = lireEnveloppe(f.texte);
+    let cle = R.cle;
+    if (motDePasse || !cle || !R.sel || versB64(R.sel) !== versB64(e.sel) || R.iterations !== e.iterations) {
+      if (!motDePasse) throw new Error('Saisis le mot de passe (il a changé sur le PC).');
+      cle = await deriver(motDePasse, e.sel, e.iterations);
+    }
+    R.copie = await dechiffrer(f.texte, cle);
+    Object.assign(R, { cle, sel: e.sel, iterations: e.iterations });
+    if (R.jeton) await lireDistants();                  // vérifie aussi le jeton tout de suite
+    else R.distants = [];
+  } catch (err) {
+    Object.assign(R, ancien);
+    throw err;
+  }
+  memoire.ecrire('depot', R.depot === depotDeLAdresse() ? null : R.depot); memoire.ecrire('jeton', R.jeton || null);
+  memoire.ecrire('cle', { cle: versB64(R.cle), sel: versB64(R.sel), iterations: R.iterations });
+  if (!R.jeton) await lireDistants().catch(() => {});
+}
+async function lireDistants() {
+  const f = await lireCopie('changements.json');
+  let liste = [];
+  if (f) { try { liste = await dechiffrer(f.texte, R.cle); } catch (_) { liste = []; } }   // ancien mot de passe : ignorés par le PC
+  R.distants = Array.isArray(liste) ? liste : [];
+  const vus = new Set(R.distants.map(c => c.id));
+  R.attente = R.attente.filter(c => !vus.has(c.id));
+  memoire.ecrire('attente', R.attente);
+  return f;
+}
+async function charger() {
+  R.erreur = '';
+  try {
+    const f = await lireCopie('instantane.json');
+    if (!f) throw new Error("Le PC n'a encore rien publié : sur le PC, Réglages → Accès mobile → Synchroniser maintenant.");
+    const e = lireEnveloppe(f.texte);
+    if (versB64(e.sel) !== versB64(R.sel) || e.iterations !== R.iterations) {
+      R.cle = null; memoire.ecrire('cle', null);
+      throw new Error('Le mot de passe a changé sur le PC : saisis le nouveau.');
+    }
+    R.copie = await dechiffrer(f.texte, R.cle);
+    memoire.ecrire('copie', f.texte);                     // copie chiffrée gardée pour l'ouverture hors connexion
+    await lireDistants();
+  } catch (err) {
+    R.erreur = err.message;
+    if (err instanceof MdpIncorrect) { R.cle = null; memoire.ecrire('cle', null); }
+  }
+  rendre();
+  if (R.attente.length && !lectureSeule()) envoyer();
+}
+async function envoyer() {
+  if (R.envoi || lectureSeule()) return R.envoi;
+  R.envoi = (async () => {
+    for (let essai = 0; essai < 4 && R.attente.length; essai++) {
+      try {
+        const f = await lireFichier('changements.json');
+        let liste = [];
+        if (f) { try { liste = await dechiffrer(f.texte, R.cle); } catch (_) { liste = []; } }
+        if (!Array.isArray(liste)) liste = [];
+        const vus = new Set(liste.map(c => c.id)), envoyes = R.attente.slice();
+        const total = liste.concat(envoyes.filter(c => !vus.has(c.id)));
+        await ecrireFichier('changements.json', await chiffrer(total, R.cle, R.sel, R.iterations), f && f.sha, 'Statuts posés sur le téléphone');
+        const ids = new Set(envoyes.map(c => c.id));
+        R.attente = R.attente.filter(c => !ids.has(c.id));
+        R.distants = total;
+        memoire.ecrire('attente', R.attente);
+        R.erreur = '';
+        break;
+      } catch (err) {
+        if (err instanceof Conflit) continue;              // le PC vient de publier : on relit et on recommence
+        R.erreur = err.message;
+        break;
+      }
+    }
+  })();
+  try { await R.envoi; } finally { R.envoi = null; if (R.copie) rendreEtat(); }
+}
+let dernier = null;
+function poser(cle, statut) {
+  if (lectureSeule()) return;
+  const o = offres().find(x => x.cle === cle);
+  if (!o) return;
+  const c = { id: nouvelId(), cle, statut: statut || null, quand: maintenant() };
+  dernier = { cle, avant: o.statut, id: c.id };
+  R.attente.push(c);
+  memoire.ecrire('attente', R.attente);
+  rendre();
+  toast(statut ? `${LIBELLES[statut]} : ${o.titre}` : `Retiré : ${o.titre}`, true);
+  envoyer();
+}
+function annuler() {
+  if (!dernier) return;
+  const i = R.attente.findIndex(c => c.id === dernier.id);
+  if (i >= 0) { R.attente.splice(i, 1); memoire.ecrire('attente', R.attente); rendre(); }
+  else poser(dernier.cle, dernier.avant);              // déjà envoyé : on repose l'ancien statut
+  dernier = null;
+  $('#toast').hidden = true;
+}
+function oublier() {
+  for (const k of ['depot', 'jeton', 'cle', 'attente', 'copie', 'vue']) memoire.ecrire(k, null);
+  Object.assign(R, { depot: depotDeLAdresse(), jeton: '', cle: null, sel: null, iterations: 0, copie: null, distants: [], attente: [], vue: 'avoir', erreur: '' });
+  rendre();
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest ? e.target.closest('button, a') : null;
+  if (!t) return;
+  if (t.dataset.vue) { R.vue = t.dataset.vue; if (R.vue !== 'ignore') memoire.ecrire('vue', R.vue); window.scrollTo(0, 0); return rendre(); }
+  if (t.dataset.sous) { R.sousVue = t.dataset.sous; return rendre(); }
+  if (t.dataset.s !== undefined) { const c = t.closest('.carte'); if (c) poser(c.dataset.cle, t.dataset.s || null); return; }
+  const a = t.dataset.a || t.id;
+  if (a === 'annuler') return annuler();
+  if (a === 'rafraichir' || a === 'recharger') { t.setAttribute('aria-busy', 'true'); return charger().finally(() => t.removeAttribute('aria-busy')); }
+  if (a === 'menu' || a === 'config') { R.vue = 'config'; R.erreur = ''; return rendre(); }
+  if (a === 'retour') { R.vue = memoire.lire('vue', 'avoir'); R.erreur = ''; return rendre(); }
+  if (a === 'oublier' && confirm('Oublier cet appareil ? La clé, le jeton et la copie seront effacés de ce téléphone.')) return oublier();
+});
+document.addEventListener('submit', async e => {
+  e.preventDefault();
+  const b = $('#c-ok');
+  b.setAttribute('aria-busy', 'true'); b.textContent = 'Vérification…';
+  try {
+    const sans = $('#c-sans-jeton');
+    await connecter($('#c-depot').value, $('#c-mdp').value, $('#c-jeton').value, !!(sans && sans.checked));
+    R.erreur = ''; R.vue = memoire.lire('vue', 'avoir');
+    if (R.vue === 'config') R.vue = 'avoir';
+  } catch (err) { R.erreur = err.message; }
+  rendre();
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'q') return;
+  R.q = e.target.value;
+  const pos = e.target.selectionStart;
+  rendre();
+  const q = $('#q'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (_) {} }
+});
+window.addEventListener('online', () => { if (R.attente.length) envoyer(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && R.cle && R.copie) charger(); });
+
+// Démarrage : copie chiffrée gardée sur le téléphone affichée tout de suite, puis version à jour depuis GitHub.
+async function demarrer() {
+  if (!(R.depot && R.cle)) return rendre();
+  const cache = memoire.lire('copie', null);
+  if (cache) { try { R.copie = await dechiffrer(cache, R.cle); } catch (_) { R.copie = null; } }
+  rendre();
+  await charger();
+}
+const pret = demarrer();
+</script>
+</body>
+</html>
